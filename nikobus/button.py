@@ -1,17 +1,17 @@
 """Nikobus Button entity"""
 
 from homeassistant.components.button import ButtonEntity
-from homeassistant.components.binary_sensor import BinarySensorEntity
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-
 from .const import DOMAIN, BRAND
 
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities) -> bool:
+    """Set up Nikobus button entities from a config entry."""
     dataservice = hass.data[DOMAIN].get(entry.entry_id)
 
     entities = []
 
+    # If the PyPI library provides an API method to fetch button data, replace `dict_button_data` with it
     if dataservice.api.dict_button_data:
         for button in dataservice.api.dict_button_data.get("nikobus_button", {}).values():
             impacted_modules_info = [
@@ -33,7 +33,10 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities) -> b
     async_add_entities(entities)
 
 class NikobusButtonEntity(CoordinatorEntity, ButtonEntity):
+    """Representation of a Nikobus button entity within Home Assistant."""
+
     def __init__(self, hass: HomeAssistant, dataservice, description, address, operation_time, impacted_modules_info) -> None:
+        """Initialize the button entity with data from the Nikobus configuration."""
         super().__init__(dataservice)
         self._hass = hass
         self._dataservice = dataservice
@@ -47,6 +50,7 @@ class NikobusButtonEntity(CoordinatorEntity, ButtonEntity):
 
     @property
     def device_info(self):
+        """Return device information about this button entity."""
         return {
             "identifiers": {(DOMAIN, self._address)},
             "name": self._description,
@@ -56,6 +60,7 @@ class NikobusButtonEntity(CoordinatorEntity, ButtonEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, str] | None:
+        """Return extra state attributes of the button entity."""
         impacted_modules_str = ", ".join(
             f"{module['address']}_{module['group']}" for module in self.impacted_modules_info
         )
