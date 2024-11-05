@@ -2,8 +2,8 @@
   "codeowners": ["@fdebrus"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/fdebrus/nikobus-ha",
-  "issue_tracker": "https://github.com/fdebrus/nikobus-ha/issues",
+  "documentation": "https://github.com/fdebrus/ha-nikobus",
+  "issue_tracker": "https://github.com/fdebrus/ha-nikobus/issues",
   "domain": "nikobus",
   "name": "Nikobus",
   "requirements": [
