@@ -14,6 +14,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities) -> b
 
     entities = []
 
+    # If `dict_button_data` is replaced with an API method in nikobusconnect, call it here
     if dataservice.api.dict_button_data:
         for button in dataservice.api.dict_button_data["nikobus_button"].values():
             impacted_modules_info = [
