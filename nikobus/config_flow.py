@@ -5,11 +5,11 @@ import ipaddress
 import re
 import os
 import socket
+import logging
+from typing import Any, Dict
 
 from homeassistant import config_entries
 import homeassistant.helpers.config_validation as cv
-import logging
-from typing import Any, Dict
 
 from .const import (
     DOMAIN, 
