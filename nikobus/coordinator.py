@@ -7,7 +7,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.config_entries import ConfigEntry
 
-from .nikobus import Nikobus, NikobusConnectionError, NikobusDataError
+# Import from nikobusconnect PyPI library
+from nikobusconnect import Nikobus, NikobusConnectionError, NikobusDataError
 from .const import (
     CONF_CONNECTION_STRING,
     CONF_REFRESH_INTERVAL,
@@ -46,13 +47,14 @@ class NikobusDataCoordinator(DataUpdateCoordinator):
         self._unsub_update_listener = self._config_entry.add_update_listener(self.async_config_entry_updated)
 
     async def connect(self):
-        """Connect to the Nikobus system."""
+        """Connect to the Nikobus system using the nikobusconnect library."""
         try:
+            # Initialize Nikobus instance from the PyPI library
             self.api = await Nikobus.create(self.hass, self._config_entry, self.connection_string, self.async_event_handler)
             self.hass.async_create_task(self.api.command_handler())
             self.hass.async_create_task(self.api.listen_for_events())
             await self.async_refresh()
-        except NikobusConnectionError as e:
+        except  as e:
             _LOGGER.error("Failed to connect to Nikobus: %s", e)
             raise NikobusConnectError("Failed to connect to Nikobus.", original_exception=e)
 
