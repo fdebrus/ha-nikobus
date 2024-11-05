@@ -1,12 +1,11 @@
 """Load / Write configuration files for Nikobus"""
 
 import json
-from aiofiles import open as aio_open
 import logging
+from aiofiles import open as aio_open
 from homeassistant.exceptions import HomeAssistantError
 
 _LOGGER = logging.getLogger(__name__)
-__version__ = '0.1'
 
 class NikobusConfig:
     """Handles the loading and saving of Nikobus configuration data."""
@@ -22,7 +21,6 @@ class NikobusConfig:
         try:
             async with aio_open(file_path, mode='r') as file:
                 data = json.loads(await file.read())
-
             return self._transform_loaded_data(data, data_type)
 
         except FileNotFoundError:
@@ -45,17 +43,13 @@ class NikobusConfig:
 
     def _transform_button_data(self, data: dict) -> dict:
         """Transform button data from a list to a dictionary."""
-        if 'nikobus_button' in data:
-            data['nikobus_button'] = {button['address']: button for button in data['nikobus_button']}
-        else:
-            _LOGGER.warning(f"'nikobus_button' key not found in button data")
+        data['nikobus_button'] = {button['address']: button for button in data.get('nikobus_button', [])}
         return data
 
     def _transform_module_data(self, data: dict) -> dict:
         """Transform module data from a list to a dictionary."""
         for key in ['switch_module', 'dimmer_module', 'roller_module']:
-            if key in data:
-                data[key] = {module['address']: module for module in data[key]}
+            data[key] = {module['address']: module for module in data.get(key, [])}
         return data
 
     def _handle_file_not_found(self, file_path: str, data_type: str) -> None:
@@ -74,12 +68,9 @@ class NikobusConfig:
                 json_data = json.dumps(transformed_data, indent=4)
                 await file.write(json_data)
 
-        except IOError as e:
-            _LOGGER.error(f'Failed to write {data_type.capitalize()} data to file {file_name}: {e}')
-            raise HomeAssistantError(f'Failed to write {data_type.capitalize()} data to file {file_name}: {e}') from e
-        except TypeError as e:
-            _LOGGER.error(f'Failed to serialize {data_type} data to JSON: {e}')
-            raise HomeAssistantError(f'Failed to serialize {data_type} data to JSON: {e}') from e
+        except (IOError, TypeError) as e:
+            _LOGGER.error(f'Error writing {data_type.capitalize()} data to file {file_name}: {e}')
+            raise HomeAssistantError(f'Error writing {data_type.capitalize()} data to file {file_name}: {e}') from e
         except Exception as e:
             _LOGGER.error(f'Unexpected error writing {data_type} data to file {file_name}: {e}')
             raise HomeAssistantError(f'Unexpected error writing {data_type} data to file {file_name}: {e}') from e
@@ -88,17 +79,16 @@ class NikobusConfig:
         """Transform the data for writing based on the data type."""
         if data_type == "button":
             return self._transform_button_data_for_writing(data)
-        # Add other data types here if needed
         return data
 
     def _transform_button_data_for_writing(self, data: dict) -> dict:
         """Transform button data from a dictionary back to a list for saving."""
-        button_data_list = []
-        for address, details in data.get("nikobus_button", {}).items():
-            button_data = {
+        button_data_list = [
+            {
                 "description": details["description"],
                 "address": address,
                 "impacted_module": details["impacted_module"]
             }
-            button_data_list.append(button_data)
+            for address, details in data.get("nikobus_button", {}).items()
+        ]
         return {"nikobus_button": button_data_list}
