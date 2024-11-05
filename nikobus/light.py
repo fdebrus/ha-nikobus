@@ -1,7 +1,7 @@
 """Nikobus Dimmer / Light entity"""
 
 import logging
-from homeassistant.components.light import LightEntity, SUPPORT_BRIGHTNESS
+from homeassistant.components.light import LightEntity
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN, BRAND
@@ -11,6 +11,7 @@ _LOGGER = logging.getLogger(__name__)
 DEFAULT_BRIGHTNESS = 255
 
 async def async_setup_entry(hass, entry, async_add_entities) -> bool:
+    """Set up Nikobus light entities from a config entry."""
     dataservice = hass.data[DOMAIN].get(entry.entry_id)
 
     dimmer_modules = dataservice.api.dict_module_data.get('dimmer_module', {})
